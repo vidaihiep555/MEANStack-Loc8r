@@ -1,6 +1,9 @@
 var mongoose = require('mongoose');
 var gracefulShutdown;
 var dbURI = 'mongodb://localhost/Loc8r';
+if (process.env.NODE_ENV === 'production') {
+    dbURI = process.env.MONGOLAB_URI;
+}
 
 mongoose.connect(dbURI);
 
@@ -15,9 +18,11 @@ mongoose.connection.on('disconnected', function() {
     console.log('Disconnected');
 });
 
+// CAPTURE APP TERMINATION / RESTART EVENTS
+// To be called when process is restarted or terminated
 gracefulShutdown = function(msg, callback) {
     mongoose.connection.close(function() {
-        console.log(msg);
+        console.log('Mongoose disconnected through ' + msg);
         callback();
     });
 };
@@ -43,4 +48,5 @@ process.on('SIGTERM', function() {
     });
 });
 
+// BRING IN YOUR SCHEMAS & MODELS
 require('./locations');

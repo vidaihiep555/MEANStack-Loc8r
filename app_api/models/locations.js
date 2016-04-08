@@ -44,7 +44,8 @@ var locationSchema = new mongoose.Schema({
     //long lat order
     coords: {
         type: [Number],
-        index: '2dspere'
+        index: '2dspere',
+        required: true
     },
     openingTimes: [openingTimeSchema],
     reviews: [reviewSchema]

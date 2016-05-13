@@ -16,7 +16,7 @@ var reviewSchema = new mongoose.Schema({
 });
 
 var openingTimeSchema = new mongoose.Schema({
-    day: {
+    days: {
         type: String,
         required: true
     },
@@ -44,7 +44,7 @@ var locationSchema = new mongoose.Schema({
     //long lat order
     coords: {
         type: [Number],
-        index: '2dspere',
+        index: '2dsphere',
         required: true
     },
     openingTimes: [openingTimeSchema],

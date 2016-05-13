@@ -6,12 +6,29 @@ function sendJsonResponse(res, status, content) {
     res.json(content);
 }
 
-/* GET api/locations/:locationid/reviews*/
+/* GET api/locations/:locationid/reviews */
 module.exports.reviewsList = function(req, res) {
-
+    if (req.params.locationid) {
+        Loc.findById(req.params.locationid).select('reviews').exec(function(err, location) {
+            if (!location) {
+                sendJsonResponse(res, 404, {
+                    "message": "Location not found"
+                });
+                return;
+            } else if (err) {
+                sendJsonResponse(res, 404, err);
+                return;
+            }
+            sendJsonResponse(res, 200, location.reviews);
+        });
+    } else {
+        sendJsonResponse(res, 404, {
+            "message": "locationid is required"
+        });
+    }
 };
 
-/*POST api/locations/:locationid/reviews*/
+/*POST api/locations/:locationid/reviews */
 module.exports.reviewsCreate = function(req, res) {
     if (req.params.locationid) {
         Loc.findById(req.params.locationid).select('name reviews').exec(function(err, location) {
@@ -46,6 +63,7 @@ function doAddReview(req, res, location) {
                 sendJsonResponse(res, 404, err);
             } else {
                 updateAverageRating(location._id);
+                //get the latest review
                 thisReview = location.reviews[location.reviews.length - 1];
                 sendJsonResponse(res, 201, thisReview);
             }
@@ -62,7 +80,8 @@ function updateAverageRating(locationid) {
 }
 
 function doSetAverageRating(location) {
-    var reviewCount, ratingAverage, ratingTotal;
+    var reviewCount, ratingAverage;
+    var ratingTotal = 0;
     if (location.reviews && location.reviews.length > 0) {
         reviewCount = location.reviews.length;
         location.reviews.forEach(function(review) {
@@ -80,7 +99,7 @@ function doSetAverageRating(location) {
     }
 }
 
-/*GET api/locations/:locationid/reviews/:reviewid*/
+/* GET api/locations/:locationid/reviews/:reviewid */
 module.exports.reviewsReadOne = function(req, res) {
     if (req.params && req.params.locationid && req.params.reviewid) {
         Loc.findById(req.params.locationid).select('name reviews').exec(function(err, location) {
@@ -123,9 +142,9 @@ module.exports.reviewsReadOne = function(req, res) {
     }
 };
 
-/*PUT api/locations/:locationid/reviews/:reviewid*/
+/* PUT api/locations/:locationid/reviews/:reviewid */
 module.exports.reviewsUpdateOne = function(req, res) {
-    if (req.params && req.params.locationid && res.params.reviewid) {
+    if (req.params && req.params.locationid && req.params.reviewid) {
         Loc.findById(req.params.locationid).select('reviews').exec(function(err, location) {
             var thisReview;
             if (!location) {
@@ -169,9 +188,9 @@ module.exports.reviewsUpdateOne = function(req, res) {
     }
 };
 
-/*DELETE api/locations/:locationid/reviews/:reviewid*/
+/* DELETE api/locations/:locationid/reviews/:reviewid */
 module.exports.reviewsDeleteOne = function(req, res) {
-    if (req.params && req.params.locationid && res.params.reviewid) {
+    if (req.params && req.params.locationid && req.params.reviewid) {
         Loc.findById(req.params.locationid).select('reviews').exec(function(err, location) {
             var thisReview;
             if (!location) {

@@ -23,6 +23,21 @@ var theEarth = (function() {
     };
 })();
 
+/* GET api/locationsall */
+module.exports.locationsListAll = function(req, res) {
+    Loc.find({}, function(err, results) {
+        var locations;
+        if (err) {
+            //console.log('geoNear error:', err);
+            sendJsonResponse(res, 404, err);
+        } else {
+            //console.log("Locations: " + results);
+            locations = buildLocationList(results);
+            sendJsonResponse(res, 200, locations);
+        }
+    });
+};
+
 /* GET api/locations */
 module.exports.locationsListByDistance = function(req, res) {
     var lng = parseFloat(req.query.lng);
@@ -37,34 +52,41 @@ module.exports.locationsListByDistance = function(req, res) {
         maxDistance: theEarth.getRadsFromDistance(maxDistance),
         num: 10
     };
-    if (!lng || !lat || !maxDistance) {
+    if ((!lng && lng !== 0) || (!lat && lat !== 0) || !maxDistance) {
         sendJsonResponse(res, 404, {
             "message": "Not found, lng, lat and maxDistance are both required"
         });
         return;
     }
     Loc.geoNear(point, geoOptions, function(err, results, stats) {
-        var locations = [];
+        var locations;
         console.log('Geo Results', results);
         console.log('Geo stats', stats);
         if (err) {
             console.log('geoNear error:', err);
             sendJsonResponse(res, 404, err);
         } else {
-            results.forEach(function(doc) {
-                locations.push({
-                    distance: theEarth.getDistanceFromRads(doc.dis),
-                    name: doc.obj.name,
-                    address: doc.obj.address,
-                    rating: doc.obj.rating,
-                    facilities: doc.obj.facilities,
-                    _id: doc.obj._id
-                });
-            });
+            locations = buildLocationList(results);
             sendJsonResponse(res, 200, locations);
         }
     });
 };
+
+function buildLocationList(results) {
+    var locations = [];
+    results.forEach(function(doc) {
+        locations.push({
+            //distance: theEarth.getDistanceFromRads(doc.dis),
+            distance: theEarth.getDistanceFromRads(0.003),
+            name: doc.name,
+            address: doc.address,
+            rating: doc.rating,
+            facilities: doc.facilities,
+            _id: doc._id
+        });
+    });
+    return locations;
+}
 
 /* POST api/locations */
 module.exports.locationsCreate = function(req, res) {
@@ -85,7 +107,7 @@ module.exports.locationsCreate = function(req, res) {
             closed: req.body.closed2,
         }]
     };
-    console.log("new location:" + newLocation.name);
+    //console.log("new location:" + newLocation.name);
     Loc.create({
         name: req.body.name,
         address: req.body.address,
@@ -184,7 +206,7 @@ module.exports.locationsDeleteOne = function(req, res) {
             if (err) {
                 sendJSONresponse(res, 404, err);
             } else {
-                console.log("Location id " + req.params.locationid + " deleted");
+                //console.log("Location id " + req.params.locationid + " deleted");
                 sendJSONresponse(res, 204, null);
             }
         });

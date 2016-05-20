@@ -1,7 +1,6 @@
 $('#addReview').submit(function(e) {
-    console.log("ZZZZZZZZZZZZZZZZZZZ");
     $('.alert.alert-danger').hide();
-    if (!$('input#name').val() || !$('select#rating').val() || !$('input#review').val()) {
+    if (!$('input#name').val() || !$('select#rating').val() || !$('textarea#review').val()) {
         if ($('.alert.alert-danger').length) {
             $('.alert.alert-danger').show();
         } else {

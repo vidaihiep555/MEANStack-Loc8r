@@ -8,6 +8,22 @@ if (process.env.NODE_ENV === 'production') {
 
 /* GET home page */
 module.exports.homelist = function(req, res) {
+        renderHomepage(req, res);
+};
+
+function renderHomepage(req, res) {
+    res.render('locations-list', {
+        title: 'Loc8r - find a place to work with wifi',
+        pageHeader: {
+            title: 'Loc8r',
+            strapline: 'Find places to work with wifi near you!'
+        },
+        sidebar: "Looking for wifi and a seat? Loc8r helps you find places to work when out and about. Perhaps with coffee, cake or a pint? Let Loc8r help you find the place you're looking for."
+    });
+}
+
+/* GET home page */
+module.exports.oldhomelist = function(req, res) {
     var requestOptions, path;
     path = '/api/locations/all';
     requestOptions = {
@@ -20,11 +36,11 @@ module.exports.homelist = function(req, res) {
         if (response.stausCode === 200 && data.length > 0) {
             //Do something
         }
-        renderHomepage(req, res, body);
+        oldrenderHomepage(req, res, body);
     });
 };
 
-function renderHomepage(req, res, responseBody) {
+function oldrenderHomepage(req, res, responseBody) {
     var message;
     if (!(responseBody instanceof Array)) {
         responseBody = [];
@@ -150,7 +166,8 @@ function renderReviewForm(req, res, locDetails) {
         pageHeader: {
             title: 'Review ' + locDetails.name
         },
-        error: req.query.err
+        error: req.query.err,
+        url: req.originalUrl
     });
 }
 
@@ -158,6 +175,7 @@ function renderReviewForm(req, res, locDetails) {
 module.exports.doAddReview = function(req, res) {
     var requestOptions, path, locationid, postdata;
     locationid = req.params.locationid;
+    path = '/api/locations/' + locationid + '/reviews';
     postdata = {
         author: req.body.name,
         rating: parseInt(req.body.rating, 10),
